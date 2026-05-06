@@ -1,4 +1,4 @@
-# Law Chatbot Project - RAG System ⚖️🤖
+# Law Chatbot Project - RAG System 
 
 ## Giới thiệu (Introduction)
 **Vietnamese:**
