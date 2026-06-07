@@ -1,25 +1,61 @@
+import streamlit as st
+
 from rag_logic import RAGSystem
-import os
 
-API_KEY = "AIzaSyBKycL-Xzsyaeu431so8F-yNXop4Bf7wQA"
-PDF_PATH = "data/Nghi_dinh_168_2024.pdf" 
+PDF_PATH = "data/Nghi_dinh_168_2024.pdf"
 
-def run_test():
-    try:
-        rag = RAGSystem(API_KEY)
-        vector_db = rag.create_vector_db(PDF_PATH)
-        qa_chain = rag.get_qa_chain(vector_db)
-        
-        query = "Mức phạt nồng độ cồn xe máy cao nhất?"
-        # Sử dụng 'input' làm key truyền vào
-        result = qa_chain.invoke({"input": query})
-        
-        print(f"\n--- KẾT QUẢ TEST ---")
-        print(f"Câu hỏi: {query}")
-        print(f"Trả lời: {result['answer']}") # Lấy từ key 'answer'
-        
-    except Exception as e:
-        print(f"Lỗi: {e}")
 
-if __name__ == "__main__":
-    run_test()
+@st.cache_resource
+def load_system():
+
+    rag = RAGSystem()
+
+    vector_db = rag.create_vector_db(PDF_PATH)
+
+    return rag.get_qa_chain(vector_db)
+
+
+st.set_page_config(
+    page_title="Chatbot Luật Giao Thông",
+    page_icon="⚖️",
+    layout="wide"
+)
+
+st.title("⚖️ Chatbot Luật Giao Thông Việt Nam")
+
+st.markdown(
+    """
+### Công nghệ sử dụng
+
+- Ollama (Qwen3 8B)
+- HuggingFace Embeddings
+- FAISS
+- PDF RAG
+"""
+)
+
+try:
+
+    qa_chain = load_system()
+
+    question = st.text_area(
+        label="Nhập câu hỏi",
+        height=120,
+        placeholder="Ví dụ: Mức phạt nồng độ cồn xe máy cao nhất là bao nhiêu?"
+    )
+
+    if st.button("Tra cứu"):
+
+        if question.strip():
+
+            with st.spinner("Đang xử lý..."):
+
+                result = qa_chain(question)
+
+            st.success("Kết quả")
+
+            st.write(result["answer"])
+
+except Exception as e:
+
+    st.error(str(e))
